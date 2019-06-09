@@ -1,0 +1,8 @@
+
+class Configs{
+  static String ggKEY2="";
+
+  static String ggKEY="@@PUT YOUR API KEY HERE@@";
+
+
+}

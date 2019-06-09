@@ -23,7 +23,7 @@
 
     ],
     "Firebase/Auth": [
-
+      "~> 6.0"
     ],
     "Firebase/Core": [
 

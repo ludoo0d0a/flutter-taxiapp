@@ -1,3 +1,4 @@
+import 'package:fl_uberapp/src/config/configs.dart';
 import 'package:fl_uberapp/src/model/place_item_res.dart';
 import 'package:fl_uberapp/src/model/step_res.dart';
 import 'package:fl_uberapp/src/model/trip_info_res.dart';
@@ -18,7 +19,11 @@ class _HomePageState extends State<HomePage> {
   var _tripDistance = 0;
   final Map<String, Marker> _markers = <String, Marker>{};
 
+  //final Set<Marker> _markers = {};
+
   GoogleMapController _mapController;
+
+  Set<Polyline> _polylines = {};
 
   @override
   Widget build(BuildContext context) {
@@ -31,10 +36,13 @@ class _HomePageState extends State<HomePage> {
         child: Stack(
           children: <Widget>[
             GoogleMap(
-//              key: ggKey,
-//              markers: Set.of(markers.values),
+              key: Key(Configs.ggKEY),
+//              markers: Set.of(_markers.values),
+              markers: _markers.values.toSet(),
+              polylines: _polylines,
               onMapCreated: (GoogleMapController controller) {
                 _mapController = controller;
+                //_mapController.complete(controller);
               },
               initialCameraPosition: CameraPosition(
                 target: LatLng(10.7915178, 106.7271422),
@@ -70,7 +78,10 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-            Positioned(left: 20, right: 20, bottom: 40,
+            Positioned(
+              left: 20,
+              right: 20,
+              bottom: 40,
               height: 248,
               child: CarPickup(_tripDistance),
             )
@@ -86,24 +97,26 @@ class _HomePageState extends State<HomePage> {
   void onPlaceSelected(PlaceItemRes place, bool fromAddress) {
     var mkId = fromAddress ? "from_address" : "to_address";
     _addMarker(mkId, place);
-    _moveCamera();
+    // _moveCamera();
     _checkDrawPolyline();
   }
 
   void _addMarker(String mkId, PlaceItemRes place) async {
     // remove old
     _markers.remove(mkId);
-    _mapController.clearMarkers();
+    //_mapController.clearMarkers();
 
-    _markers[mkId] = Marker(
-        mkId,
-        MarkerOptions(
-            position: LatLng(place.lat, place.lng),
-            infoWindowText: InfoWindowText(place.name, place.address)));
+    _markers[mkId] = new Marker(
+      markerId: MarkerId(mkId),
+      position: LatLng(place.lat, place.lng),
+      infoWindow: new InfoWindow(title: place.name, snippet: place.address),
+      //+
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueViolet),
+    );
 
-    for (var m in _markers.values) {
-      await _mapController.addMarker(m.options);
-    }
+//    for (var m in _markers.values) {
+//      await _mapController.addMarker(m.options);
+//    }
   }
 
   void _moveCamera() {
@@ -111,11 +124,11 @@ class _HomePageState extends State<HomePage> {
     print(_markers);
 
     if (_markers.values.length > 1) {
-      var fromLatLng = _markers["from_address"].options.position;
-      var toLatLng = _markers["to_address"].options.position;
+      var fromLatLng = _markers["from_address"].position;
+      var toLatLng = _markers["to_address"].position;
 
       var sLat, sLng, nLat, nLng;
-      if(fromLatLng.latitude <= toLatLng.latitude) {
+      if (fromLatLng.latitude <= toLatLng.latitude) {
         sLat = fromLatLng.latitude;
         nLat = toLatLng.latitude;
       } else {
@@ -123,7 +136,7 @@ class _HomePageState extends State<HomePage> {
         nLat = fromLatLng.latitude;
       }
 
-      if(fromLatLng.longitude <= toLatLng.longitude) {
+      if (fromLatLng.longitude <= toLatLng.longitude) {
         sLng = fromLatLng.longitude;
         nLng = toLatLng.longitude;
       } else {
@@ -131,29 +144,34 @@ class _HomePageState extends State<HomePage> {
         nLng = fromLatLng.longitude;
       }
 
-      LatLngBounds bounds = LatLngBounds(northeast: LatLng(nLat, nLng), southwest: LatLng(sLat, sLng));
+      LatLngBounds bounds = LatLngBounds(
+          northeast: LatLng(nLat, nLng),
+          southwest: LatLng(sLat, sLng)
+      );
       _mapController.animateCamera(CameraUpdate.newLatLngBounds(bounds, 50));
-    } else {
-      _mapController.animateCamera(CameraUpdate.newLatLng(
-          _markers.values.elementAt(0).options.position));
+    } else if (_markers.values.length >0) {
+      //One marker required
+      _mapController.animateCamera(
+          CameraUpdate.newLatLng(_markers.entries.first.value.position)
+      );
     }
   }
 
   void _checkDrawPolyline() {
 //  remove old polyline
-    _mapController.clearPolylines();
+    //_mapController.clearPolylines();
+    _polylines.clear();
 
     if (_markers.length > 1) {
-      var from = _markers["from_address"].options.position;
-      var to = _markers["to_address"].options.position;
+      var from = _markers["from_address"].position;
+      var to = _markers["to_address"].position;
       PlaceService.getStep(
               from.latitude, from.longitude, to.latitude, to.longitude)
           .then((vl) {
-            TripInfoRes infoRes = vl;
+        TripInfoRes infoRes = vl;
 
-            _tripDistance = infoRes.distance;
-            setState(() {
-            });
+        _tripDistance = infoRes.distance;
+        setState(() {});
         List<StepsRes> rs = infoRes.steps;
         List<LatLng> paths = new List();
         for (var t in rs) {
@@ -162,9 +180,13 @@ class _HomePageState extends State<HomePage> {
           paths.add(LatLng(t.endLocation.latitude, t.endLocation.longitude));
         }
 
-//        print(paths);
-        _mapController.addPolyline(PolylineOptions(
-            points: paths, color: Color(0xFF3ADF00).value, width: 10));
+        //print(paths);
+//        _mapController.addPolyline(PolylineOptions(
+//            points: paths, color: Color(0xFF3ADF00).value, width: 10));
+//      });
+
+        _polylines.add(
+            new Polyline(points: paths, color: Color(0xFF3ADF00), width: 10));
       });
     }
   }

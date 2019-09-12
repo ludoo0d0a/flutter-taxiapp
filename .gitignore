@@ -326,3 +326,4 @@ build/
 
 lib/src/config/configs.dart
 
+*.lock

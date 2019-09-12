@@ -97,7 +97,8 @@ class _HomePageState extends State<HomePage> {
   void onPlaceSelected(PlaceItemRes place, bool fromAddress) {
     var mkId = fromAddress ? "from_address" : "to_address";
     _addMarker(mkId, place);
-    // _moveCamera();
+// was commented...
+ _moveCamera();
     _checkDrawPolyline();
   }
 
@@ -186,7 +187,7 @@ class _HomePageState extends State<HomePage> {
 //      });
 
         _polylines.add(
-            new Polyline(points: paths, color: Color(0xFF3ADF00), width: 10));
+            new Polyline(polylineId: PolylineId("polyline-1"), points: paths, color: Color(0xFF3ADF00), width: 10));
       });
     }
   }

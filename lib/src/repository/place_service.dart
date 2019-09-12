@@ -25,15 +25,15 @@ class PlaceService {
 
   static Future<dynamic> getStep(
       double lat, double lng, double tolat, double tolng) async {
-    String str_origin = "origin=" + lat.toString() + "," + lng.toString();
+    String strOrigin = "origin=" + lat.toString() + "," + lng.toString();
     // Destination of route
-    String str_dest =
+    String strDest =
         "destination=" + tolat.toString() + "," + tolng.toString();
     // Sensor enabled
     String sensor = "sensor=false";
     String mode = "mode=driving";
     // Building the parameters to the web service
-    String parameters = str_origin + "&" + str_dest + "&" + sensor + "&" + mode;
+    String parameters = strOrigin + "&" + strDest + "&" + sensor + "&" + mode;
     // Output format
     String output = "json";
     // Building the url to the web service

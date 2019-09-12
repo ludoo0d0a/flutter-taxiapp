@@ -289,6 +289,8 @@ build/
 **/android/gradlew.bat
 **/android/local.properties
 **/android/**/GeneratedPluginRegistrant.java
+android/.gradle/**/*.bin
+android/.gradle/**/*.lock
 
 # iOS/XCode related
 **/ios/**/*.mode1v3
@@ -322,6 +324,7 @@ build/
 !**/ios/**/default.pbxuser
 !**/ios/**/default.perspectivev3
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
+.packages
 
 
 lib/src/config/configs.dart
